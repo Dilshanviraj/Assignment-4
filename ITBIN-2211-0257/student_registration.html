@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Student Registration</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #e3f2fd;
+      padding: 20px;
+      text-align: center;
+    }
+    form {
+      margin-top: 20px;
+    }
+    input, button {
+      padding: 10px;
+      margin: 5px;
+      width: 200px;
+    }
+    table {
+      margin: 20px auto;
+      width: 50%;
+      border-collapse: collapse;
+      background-color: #ffffff;
+    }
+    th, td {
+      padding: 12px;
+      border: 1px solid #90caf9;
+    }
+    th {
+      background-color: #42a5f5;
+      color: white;
+    }
+    .delete-btn {
+      background-color: #e57373;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+    .delete-btn:hover {
+      background-color: #ef5350;
+    }
+    .selected {
+      background-color: #ffd54f;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Welcome to Student Registration</h1>
+
+  <h2>Register New Student</h2>
+
+  <form id="studentForm">
+    <input type="text" id="studentName" placeholder="Enter Student Name" required><br>
+    <input type="number" id="studentAge" placeholder="Enter Student Age" required><br>
+    <input type="text" id="studentCourse" placeholder="Enter Course" required><br>
+    <button type="submit">Register Student</button>
+  </form>
+
+  <h2>Student List</h2>
+  <!-- Table to show students -->
+  <table id="studentsTable">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Student Name</th>
+        <th>Age</th>
+        <th>Course</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Students will be inserted here -->
+    </tbody>
+  </table>
+
+  <!-- Delete Button -->
+  <button class="delete-btn" id="deleteButton" disabled>Delete Selected Student</button>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js"></script>
+
+  <script type="module">
+    // Import Firebase libraries
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+  
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAC7rKyheMDLrCpEdYmFeJv4u0PBYNCYtQ",
+      authDomain: "sports-website-b4fa2.firebaseapp.com",
+      projectId: "sports-website-b4fa2",
+      storageBucket: "sports-website-b4fa2.appspot.com",
+      messagingSenderId: "853918366488",
+      appId: "1:853918366488:web:544e40b4032cc636d63c6d",
+      measurementId: "G-KYV4EL7EPB"
+    };
+  
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+  
+    // Get form elements
+    const studentForm = document.getElementById('studentForm');
+    const studentName = document.getElementById('studentName');
+    const studentAge = document.getElementById('studentAge');
+    const studentCourse = document.getElementById('studentCourse');
+    const studentsTableBody = document.querySelector('#studentsTable tbody');
+    const deleteButton = document.getElementById('deleteButton');
+    let selectedStudentId = null; // Store the selected student's ID
+  
+    // Submit form to register student
+    studentForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = studentName.value.trim();
+      const age = studentAge.value.trim();
+      const course = studentCourse.value.trim();
+      if (name && age && course) {
+        await addDoc(collection(db, 'students'), { name: name, age: age, course: course });
+        studentName.value = '';
+        studentAge.value = '';
+        studentCourse.value = '';
+        loadStudents();
+      }
+    });
+  
+    // Load students to table
+    async function loadStudents() {
+      studentsTableBody.innerHTML = '';
+      const snapshot = await getDocs(collection(db, 'students'));
+      let count = 1;
+      snapshot.forEach((doc) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${count++}</td>
+          <td class="student-name" data-id="${doc.id}">${doc.data().name}</td>
+          <td>${doc.data().age}</td>
+          <td>${doc.data().course}</td>
+        `;
+        studentsTableBody.appendChild(tr);
+      });
+    }
+  
+    // Delete the selected student
+    async function deleteStudent() {
+      if (selectedStudentId) {
+        await deleteDoc(doc(db, 'students', selectedStudentId));
+        loadStudents(); // Reload the students list after deletion
+        deleteButton.disabled = true; // Disable delete button after deletion
+      }
+    }
+
+    // Handle student selection and delete button toggle
+    studentsTableBody.addEventListener('click', (e) => {
+      if (e.target.classList.contains('student-name')) {
+        // Remove highlight from previously selected student
+        const previouslySelected = document.querySelector('.selected');
+        if (previouslySelected) {
+          previouslySelected.classList.remove('selected');
+        }
+        
+        // Add highlight to the clicked student
+        e.target.classList.add('selected');
+        
+        // Set the selected student ID
+        selectedStudentId = e.target.getAttribute('data-id');
+        
+        // Enable delete button
+        deleteButton.disabled = false;
+      }
+    });
+  
+    // Delete button click event
+    deleteButton.addEventListener('click', deleteStudent);
+  
+    // Load students on page load
+    loadStudents();
+  </script>
+
+</body>
+</html>
