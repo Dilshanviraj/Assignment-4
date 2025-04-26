@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sports Website</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #e3f2fd;
+      padding: 20px;
+      text-align: center;
+    }
+    form {
+      margin-top: 20px;
+    }
+    input, button {
+      padding: 10px;
+      margin: 5px;
+      width: 200px;
+    }
+    table {
+      margin: 20px auto;
+      width: 50%;
+      border-collapse: collapse;
+      background-color: #ffffff;
+    }
+    th, td {
+      padding: 12px;
+      border: 1px solid #90caf9;
+    }
+    th {
+      background-color: #42a5f5;
+      color: white;
+    }
+    .delete-btn {
+      background-color: #e57373;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+    .delete-btn:hover {
+      background-color: #ef5350;
+    }
+    .selected {
+      background-color: #ffd54f;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Welcome to Sports World</h1>
+
+  <h2>Add Your Favorite Sport</h2>
+
+  <form id="sportForm">
+    <input type="text" id="sportName" placeholder="Enter Sport Name" required><br>
+    <button type="submit">Add Sport</button>
+  </form>
+
+  <h2>Sports List</h2>
+  <!-- Table to show sports -->
+  <table id="sportsTable">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Sport Name</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Sports will be inserted here -->
+    </tbody>
+  </table>
+
+  <!-- Delete Button -->
+  <button class="delete-btn" id="deleteButton" disabled>Delete Selected Sport</button>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js"></script>
+
+  <!-- Firebase SDK with Correct Version -->
+<script type="module">
+    // Import Firebase libraries
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+  
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAC7rKyheMDLrCpEdYmFeJv4u0PBYNCYtQ",
+      authDomain: "sports-website-b4fa2.firebaseapp.com",
+      projectId: "sports-website-b4fa2",
+      storageBucket: "sports-website-b4fa2.appspot.com",
+      messagingSenderId: "853918366488",
+      appId: "1:853918366488:web:544e40b4032cc636d63c6d",
+      measurementId: "G-KYV4EL7EPB"
+    };
+  
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+  
+    // Get form elements
+    const sportForm = document.getElementById('sportForm');
+    const sportName = document.getElementById('sportName');
+    const sportsTableBody = document.querySelector('#sportsTable tbody');
+    const deleteButton = document.getElementById('deleteButton');
+    let selectedSportId = null; // Store the selected sport's ID
+  
+    // Submit form to add sport
+    sportForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = sportName.value.trim();
+      if (name) {
+        await addDoc(collection(db, 'sports'), { name: name });
+        sportName.value = '';
+        loadSports();
+      }
+    });
+  
+    // Load sports to table
+    async function loadSports() {
+      sportsTableBody.innerHTML = '';
+      const snapshot = await getDocs(collection(db, 'sports'));
+      let count = 1;
+      snapshot.forEach((doc) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${count++}</td>
+          <td class="sport-name" data-id="${doc.id}">${doc.data().name}</td>
+        `;
+        sportsTableBody.appendChild(tr);
+      });
+    }
+  
+    // Delete the selected sport
+    async function deleteSport() {
+      if (selectedSportId) {
+        await deleteDoc(doc(db, 'sports', selectedSportId));
+        loadSports(); // Reload the sports list after deletion
+        deleteButton.disabled = true; // Disable delete button after deletion
+      }
+    }
+
+    // Handle sport selection and delete button toggle
+    sportsTableBody.addEventListener('click', (e) => {
+      if (e.target.classList.contains('sport-name')) {
+        // Remove highlight from previously selected sport
+        const previouslySelected = document.querySelector('.selected');
+        if (previouslySelected) {
+          previouslySelected.classList.remove('selected');
+        }
+        
+        // Add highlight to the clicked sport
+        e.target.classList.add('selected');
+        
+        // Set the selected sport ID
+        selectedSportId = e.target.getAttribute('data-id');
+        
+        // Enable delete button
+        deleteButton.disabled = false;
+      }
+    });
+  
+    // Delete button click event
+    deleteButton.addEventListener('click', deleteSport);
+  
+    // Load sports on page load
+    loadSports();
+</script>
+
+</body>
+</html>
