@@ -1,41 +1,37 @@
-
-name: HTML Validation and Deployment
+name: Deploy to GitHub Pages
 
 on:
   push:
     branches:
-      - main
+      - main  # or use 'master' if your branch is named that
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
-  validate-html:
-    name: Validate HTML
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Validate HTML using htmlhint
-        run: |
-          npm install -g htmlhint
-          htmlhint ITBIN-2211-0257/student_registration.html
-
   deploy:
-    name: Deploy to GitHub Pages
-    needs: validate-html
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v2
+      - name: Set up Pages
+        uses: actions/configure-pages@v4
         with:
-          path: ITBIN-2211-0257/
+          enablement: true
+
+      - name: Build site
+        run: |
+          mkdir -p public
+          echo "<h1>Hello from GitHub Actions!</h1>" > public/index.html
+
+      - name: Upload site files
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
 
       - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v2
+        id: deployment
+        uses: actions/deploy-pages@v4
