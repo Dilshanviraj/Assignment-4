@@ -9,9 +9,9 @@ on:
       - main
 
 permissions:
-  contents: read  # least privilege required
-  pages: write    # only needed for GitHub Pages deployment
-  id-token: write # required for deployment with GitHub Actions
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
   validate-html:
@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install htmlhint
         run: npm install -g htmlhint
@@ -37,7 +37,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
@@ -55,16 +55,15 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup GitHub Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v4
 
       - name: Upload site files
-        uses: actions/upload-pages-artifact@v2
+        uses: actions/upload-pages-artifact@v3
         with:
           path: ITBIN-2211-0257/
 
       - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v2
-
+        uses: actions/deploy-pages@v3
