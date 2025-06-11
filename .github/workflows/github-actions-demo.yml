@@ -2,11 +2,9 @@ name: HTML Validation and Security Scan
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
-    branches:
-      - main
+    branches: [main]
 
 permissions:
   contents: read
@@ -15,55 +13,33 @@ permissions:
 
 jobs:
   validate-html:
-    name: Validate HTML
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Install htmlhint
-        run: npm install -g htmlhint
-
-      - name: Run htmlhint on HTML file
-        run: htmlhint ITBIN-2211-0257/student_registration.html
+      - uses: actions/checkout@v4
+      - run: npm install -g htmlhint
+      - run: htmlhint ITBIN-2211-0257/student_registration.html
 
   codeql-analysis:
-    name: CodeQL Security Scan
     runs-on: ubuntu-latest
     permissions:
       actions: read
       contents: read
       security-events: write
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
         with:
           languages: javascript
-
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+      - uses: github/codeql-action/analyze@v3
 
   deploy:
-    name: Deploy to GitHub Pages
     needs: [validate-html, codeql-analysis]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup GitHub Pages
-        uses: actions/configure-pages@v4
-
-      - name: Upload site files
-        uses: actions/upload-pages-artifact@v3
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v4
+      - uses: actions/upload-pages-artifact@v3
         with:
           path: ITBIN-2211-0257/
-
-      - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v3
+      - uses: actions/deploy-pages@v3
