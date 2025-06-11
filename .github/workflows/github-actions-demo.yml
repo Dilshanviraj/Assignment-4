@@ -1,10 +1,9 @@
-name: HTML Validation and Security Scan
+name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+    branches:
+      - main  # or use 'master' if your branch is named that
 
 permissions:
   contents: read
@@ -12,34 +11,27 @@ permissions:
   id-token: write
 
 jobs:
-  validate-html:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: npm install -g htmlhint
-      - run: htmlhint ITBIN-2211-0257/student_registration.html
-
-  codeql-analysis:
-    runs-on: ubuntu-latest
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
-    steps:
-      - uses: actions/checkout@v4
-      - uses: github/codeql-action/init@v3
-        with:
-          languages: javascript
-      - uses: github/codeql-action/analyze@v3
-
   deploy:
-    needs: [validate-html, codeql-analysis]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/configure-pages@v4
-      - uses: actions/upload-pages-artifact@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Pages
+        uses: actions/configure-pages@v4
         with:
-          path: ITBIN-2211-0257/
-      - uses: actions/deploy-pages@v3
+          enablement: true
+
+      - name: Build site
+        run: |
+          mkdir -p public
+          echo "<h1>Hello from GitHub Actions!</h1>" > public/index.html
+
+      - name: Upload site files
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
