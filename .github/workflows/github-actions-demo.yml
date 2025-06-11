@@ -1,37 +1,28 @@
-name: Deploy to GitHub Pages
+name: HTML File Check
 
 on:
   push:
     branches:
-      - main  # or use 'master' if your branch is named that
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  deploy:
+  validate-html:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
-      - name: Set up Pages
-        uses: actions/configure-pages@v4
-        with:
-          enablement: true
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
 
-      - name: Build site
-        run: |
-          mkdir -p public
-          echo "<h1>Hello from GitHub Actions!</h1>" > public/index.html
+    - name: Install htmlhint
+      run: npm install -g htmlhint
 
-      - name: Upload site files
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: public
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+    - name: Run HTMLHint on student_registration.html
+      run: htmlhint ITBIN-2211-0257/student_registration.html
